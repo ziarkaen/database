@@ -20,12 +20,39 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 
+import sqlite3
+
+class SqliteDatabase():
+	def __init__(self, filename):
+		self.filename = filename
+		self.conn = sqlite3.connect(filename)
+		self.tablename = self._GetTableName()
+		self.columns = self._GetColumns()
+		return
+		
+	def _GetTableName(self):
+		c = self.conn.cursor()
+		c.execute("SELECT name FROM sqlite_master WHERE type='table';")
+		tablename = c.fetchone()[0]
+		return tablename
+		
+	def _GetColumns(self):
+		cur = self.conn.cursor()
+		cur.execute("SELECT * FROM " + self.tablename + ";")
+		name_list = [t[0] for t in cur.description]
+		return name_list
 
 
-def main():
-	
-	return 0
+def backend_MatchIdentifier(identifier):
+	if identifier.split(".")[-1] == "sqlite":
+		return True
+	else:
+		return False
+
+def backend_OpenIdentifier(identifier):
+	return SqliteDatabase(identifier)
 
 if __name__ == '__main__':
-	main()
+	logging.error("sqlite.py started by itself.  Use a frontend.")
+	exit("You cannot run this script by itself; use a frontend.")
 
